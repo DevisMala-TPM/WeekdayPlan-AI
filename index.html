@@ -1,0 +1,1324 @@
+bash
+
+cat > /mnt/user-data/outputs/WeekdayPlan-ai.html << 'ENDOFFILE'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeekdayPlan AI — Smart Project Planner</title>
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║  WeekdayPlan AI  |  AI-Powered Project Management Tool               ║
+║  Version 3.0  |  Built with Vanilla JS + Anthropic Claude API   ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║  QUICK START — 3 steps:                                         ║
+║                                                                  ║
+║  1. Get a free API key at: https://console.anthropic.com         ║
+║  2. Open this file in a browser                                  ║
+║  3. Paste your key in the yellow bar at the top                  ║
+║                                                                  ║
+║  HOW THE TOOL WORKS:                                             ║
+║                                                                  ║
+║  Step 0 — Company Setup  (you fill this ONCE)                    ║
+║    Tell the AI about YOUR company: name, what you do,            ║
+║    your preferred tools, working style, and any rules            ║
+║    the AI should always follow for your projects.                ║
+║                                                                  ║
+║  Step 1 — Team Registry  (you fill this ONCE)                    ║
+║    Add every person who might work on projects.                  ║
+║    The AI learns their skills and picks the right people.        ║
+║                                                                  ║
+║  Step 2 — Client Brief  (fill for EACH new project)             ║
+║    Describe what the client wants.                               ║
+║    The AI handles team selection, methodology,                   ║
+║    timeline, risks and KPIs automatically.                       ║
+║                                                                  ║
+║  Step 3 — AI Plan  (generated automatically)                     ║
+║    Your complete project plan appears here.                      ║
+║    Save it, export it, or regenerate with changes.              ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:wght@600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --page:#F6F5F1;
+  --white:#FFFFFF;
+  --border:#E2E0D8;
+  --border2:#C8C5BB;
+  --ink:#1C1B18;
+  --ink2:#5A5850;
+  --ink3:#98958C;
+  --blue:#2563EB;
+  --blue-lt:#EEF3FE;
+  --blue-bd:#BFCFFA;
+  --green:#16A34A;
+  --green-lt:#EDFAF3;
+  --green-bd:#A7E3C0;
+  --amber:#B45309;
+  --amber-lt:#FEF9EC;
+  --amber-bd:#F8D87A;
+  --red:#DC2626;
+  --red-lt:#FEF2F2;
+  --red-bd:#FECACA;
+  --purple:#7C3AED;
+  --purple-lt:#F5F3FF;
+  --purple-bd:#DDD6FE;
+  --teal:#0D9488;
+  --teal-lt:#F0FDFA;
+  --teal-bd:#99F6E4;
+  --orange:#C2410C;
+  --orange-lt:#FFF7ED;
+  --orange-bd:#FED7AA;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --serif:'Lora',serif;
+  --r:12px;
+  --r2:18px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.05);
+}
+
+html,body{background:var(--page);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6;height:100%;overflow:hidden}
+
+/* ── LAYOUT ── */
+#app{display:grid;grid-template-columns:290px 1fr;height:100vh}
+
+/* ── SIDEBAR ── */
+#sidebar{background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+
+.sb-top{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-row{display:flex;align-items:center;gap:11px;margin-bottom:5px}
+.logo-mark{width:38px;height:38px;border-radius:11px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:20px;height:20px;fill:none;stroke:white;stroke-width:2;stroke-linecap:round}
+.logo-name{font-family:var(--serif);font-size:19px;color:var(--ink)}
+.logo-tag{font-size:12px;color:var(--ink3);margin-left:49px}
+
+.sb-nav{padding:16px;border-bottom:1px solid var(--border)}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
+
+.step-btn{display:flex;align-items:flex-start;gap:11px;padding:9px 10px;border-radius:10px;cursor:pointer;border:none;background:none;text-align:left;width:100%;transition:background .15s;color:var(--ink2);margin-bottom:2px}
+.step-btn:hover{background:var(--page)}
+.step-btn.active{background:var(--blue-lt);color:var(--blue)}
+.step-btn.done{color:var(--green)}
+
+.step-circle{width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px;transition:all .2s}
+.step-btn.done .step-circle{background:var(--green);border-color:var(--green);color:white;font-size:13px}
+
+.step-info .step-t{font-size:13px;font-weight:600}
+.step-info .step-s{font-size:11px;color:var(--ink3);margin-top:1px}
+.step-btn.active .step-s{color:var(--blue);opacity:.75}
+.step-btn.done .step-s{color:var(--green);opacity:.75}
+
+.sb-label{padding:14px 16px 6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.sb-projects{flex:1;overflow-y:auto;padding:6px 12px 12px}
+.proj-empty{text-align:center;padding:24px 12px;color:var(--ink3)}
+.proj-empty-ico{font-size:26px;margin-bottom:7px}
+.proj-empty-txt{font-size:12px;line-height:1.5}
+.proj-card{padding:11px 13px;border-radius:10px;border:1px solid var(--border);background:var(--white);cursor:pointer;margin-bottom:7px;transition:all .15s;box-shadow:var(--sh)}
+.proj-card:hover{border-color:var(--blue-bd);box-shadow:var(--sh2)}
+.proj-card-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.proj-card-meta{font-size:11px;color:var(--ink3);display:flex;gap:7px;align-items:center}
+.mdot{width:3px;height:3px;border-radius:50%;background:var(--ink3)}
+
+.new-btn{margin:0 14px 14px;padding:10px 14px;border-radius:10px;border:none;background:var(--blue);color:white;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s;box-shadow:var(--sh)}
+.new-btn:hover{background:#1D4ED8}
+
+/* ── MAIN ── */
+#main{display:flex;flex-direction:column;overflow:hidden}
+
+/* API Banner */
+#api-banner{background:var(--amber-lt);border-bottom:1px solid var(--amber-bd);padding:10px 28px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#api-banner p{font-size:13px;color:var(--amber);font-weight:600;white-space:nowrap}
+#api-banner input{flex:1;border:1px solid var(--amber-bd);background:white;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:13px;color:var(--ink);outline:none}
+#api-banner input:focus{border-color:var(--amber)}
+.ban-btn{padding:7px 16px;background:var(--amber);color:white;border:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:700;flex-shrink:0}
+
+/* Header */
+.main-hdr{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:62px;flex-shrink:0}
+.hdr-title{font-size:16px;font-weight:700;color:var(--ink)}
+.hdr-sub{font-size:12px;color:var(--ink3);margin-top:1px}
+.hdr-btns{display:flex;gap:8px}
+
+/* Progress */
+.prog-bar{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;gap:8px;height:40px;flex-shrink:0}
+.crumb{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--ink3)}
+.crumb.active{color:var(--blue)}
+.crumb.done{color:var(--green)}
+.crumb-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.crumb-sep{color:var(--border2);font-size:14px}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:28px 32px}
+
+/* Phase visibility */
+.phase{display:none}
+.phase.active{display:block}
+
+/* Page headings */
+.ph{margin-bottom:24px}
+.ph h1{font-family:var(--serif);font-size:24px;color:var(--ink);margin-bottom:5px}
+.ph p{font-size:14px;color:var(--ink2);max-width:600px;line-height:1.65}
+
+/* ── COMPANY SETUP ── */
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.setup-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;box-shadow:var(--sh)}
+.setup-card.full{grid-column:1/-1}
+.setup-card.highlight{border-color:var(--blue-bd);background:var(--blue-lt)}
+.fld-label{font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.fld-hint{font-size:11px;color:var(--ink3);margin-bottom:8px;line-height:1.5}
+.fld-input,.fld-select,.fld-ta{width:100%;border:1.5px solid var(--border);background:var(--page);border-radius:10px;padding:9px 13px;font-family:var(--font);font-size:13px;color:var(--ink);transition:border-color .15s,background .15s;outline:none}
+.fld-input:focus,.fld-select:focus,.fld-ta:focus{border-color:var(--blue);background:white}
+.fld-ta{min-height:90px;resize:vertical;line-height:1.6}
+.fld-select option{background:white}
+.setup-saved-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green);background:var(--green-lt);border:1px solid var(--green-bd);border-radius:20px;padding:3px 10px;margin-top:10px}
+
+/* ── TEAM ── */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:18px}
+.member-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px;box-shadow:var(--sh);transition:box-shadow .2s,border-color .2s}
+.member-card:hover{box-shadow:var(--sh2);border-color:var(--border2)}
+.mem-hdr{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.mem-name{font-size:13px;font-weight:700;color:var(--ink)}
+.mem-role{font-size:11px;color:var(--ink3);margin-top:2px}
+.skill-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.sk{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--page);border:1px solid var(--border);color:var(--ink2);font-weight:500}
+.exp-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}
+.rm-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--ink3);padding:4px 0;margin-top:8px;display:flex;align-items:center;gap:4px;font-family:var(--font)}
+.rm-btn:hover{color:var(--red)}
+
+.add-tile{background:var(--white);border:2px dashed var(--border2);border-radius:var(--r2);padding:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:160px;transition:all .2s;color:var(--ink3)}
+.add-tile:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.add-tile-ico{width:38px;height:38px;border-radius:50%;border:2px dashed currentColor;display:flex;align-items:center;justify-content:center;font-size:20px}
+.add-tile-t{font-size:13px;font-weight:600}
+.add-tile-s{font-size:11px;opacity:.7;text-align:center}
+
+.info-box{background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:var(--r);padding:13px 16px;font-size:13px;color:var(--blue);display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+
+/* ── BRIEF ── */
+.brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.field-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;box-shadow:var(--sh)}
+.field-card.full{grid-column:1/-1}
+.field-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.field-hint{font-size:11px;color:var(--ink3);margin-bottom:9px;line-height:1.5}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.pill{padding:6px 14px;border-radius:24px;border:1.5px solid var(--border);background:var(--page);font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s}
+.pill:hover{border-color:var(--blue-bd);color:var(--blue);background:var(--blue-lt)}
+.pill.on{border-color:var(--blue);background:var(--blue);color:white}
+
+/* ── AI PHASE ── */
+.gen-hero{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:44px 36px;text-align:center;box-shadow:var(--sh)}
+.gen-hero-ico{width:68px;height:68px;border-radius:18px;background:var(--blue-lt);border:1.5px solid var(--blue-bd);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.gen-hero-ico svg{width:32px;height:32px;color:var(--blue);fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.gen-hero h2{font-family:var(--serif);font-size:21px;color:var(--ink);margin-bottom:7px}
+.gen-hero p{font-size:14px;color:var(--ink2);max-width:400px;margin:0 auto 20px;line-height:1.6}
+.feat-chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:26px}
+.fc{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid}
+.gen-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 30px;border-radius:12px;border:none;background:var(--blue);color:white;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.gen-btn:hover{background:#1D4ED8;transform:translateY(-1px)}
+.gen-btn:active{transform:translateY(0)}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.loading-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:40px 32px;text-align:center;box-shadow:var(--sh)}
+.ld-dots{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px}
+.ld-dot{width:9px;height:9px;border-radius:50%;animation:ldp 1.4s ease-in-out infinite}
+.ld-dot:nth-child(1){background:var(--blue)}
+.ld-dot:nth-child(2){background:var(--purple);animation-delay:.2s}
+.ld-dot:nth-child(3){background:var(--teal);animation-delay:.4s}
+@keyframes ldp{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.ld-msg{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:5px}
+.ld-sub{font-size:12px;color:var(--ink3)}
+
+/* ── RESULTS ── */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:22px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;text-align:center;box-shadow:var(--sh)}
+.stat-ico{font-size:22px;margin-bottom:6px}
+.stat-val{font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:3px}
+.stat-lbl{font-size:11px;color:var(--ink3);font-weight:500}
+
+.res-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:22px;margin-bottom:16px;box-shadow:var(--sh)}
+.res-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.res-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.res-ico svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.res-title{font-size:14px;font-weight:700;color:var(--ink)}
+.res-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+
+.method-box{background:var(--purple-lt);border:1px solid var(--purple-bd);border-radius:var(--r);padding:14px 16px;margin-bottom:11px}
+.method-nm{font-family:var(--serif);font-size:17px;color:var(--purple);margin-bottom:3px}
+.method-why{font-size:13px;color:var(--ink2);line-height:1.6}
+.princ-row{display:flex;flex-wrap:wrap;gap:7px}
+.princ{padding:4px 13px;border-radius:20px;font-size:11px;font-weight:600;background:var(--purple-lt);color:var(--purple);border:1px solid var(--purple-bd)}
+
+.team-res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px}
+.team-res-card{background:var(--page);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;align-items:flex-start;gap:11px}
+.trc-info .trc-name{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.trc-info .trc-role{font-size:10px;color:var(--ink3);margin-bottom:5px}
+.trc-info .trc-resp{font-size:11px;color:var(--ink2);line-height:1.45;margin-top:5px}
+.alloc{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-bd)}
+
+.tl-list{display:flex;flex-direction:column}
+.tl-item{display:grid;grid-template-columns:155px 1fr 58px;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-name{font-size:12px;font-weight:600;color:var(--ink)}
+.tl-acts{font-size:10px;color:var(--ink3);margin-top:2px;line-height:1.4}
+.tl-track{background:var(--page);border-radius:5px;height:9px;overflow:hidden;border:1px solid var(--border)}
+.tl-bar{height:100%;border-radius:5px;background:var(--blue)}
+.tl-dur{font-size:11px;font-weight:600;color:var(--ink2);text-align:right}
+
+.risk-list{display:flex;flex-direction:column;gap:10px}
+.risk-row{border-radius:var(--r);padding:13px 15px;border:1px solid;display:flex;gap:12px;align-items:flex-start}
+.risk-row.High{background:var(--red-lt);border-color:var(--red-bd)}
+.risk-row.Medium{background:var(--amber-lt);border-color:var(--amber-bd)}
+.risk-row.Low{background:var(--green-lt);border-color:var(--green-bd)}
+.risk-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.05em;flex-shrink:0;margin-top:2px;color:white}
+.risk-row.High .risk-badge{background:var(--red)}
+.risk-row.Medium .risk-badge{background:var(--amber)}
+.risk-row.Low .risk-badge{background:var(--green)}
+.risk-nm{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.risk-desc{font-size:11px;color:var(--ink2);margin-bottom:5px;line-height:1.5}
+.risk-mit{font-size:11px;color:var(--teal);font-weight:500}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.kpi-list{display:flex;flex-direction:column;gap:8px}
+.kpi-item{padding:9px 13px;background:var(--page);border-radius:var(--r);border:1px solid var(--border)}
+.kpi-m{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:1px}
+.kpi-t{font-size:12px;color:var(--green);font-weight:700;margin-bottom:1px}
+.kpi-h{font-size:10px;color:var(--ink3)}
+
+.tool-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.tool-chip{padding:5px 13px;border-radius:8px;font-size:11px;font-weight:600;background:var(--teal-lt);color:var(--teal);border:1px solid var(--teal-bd)}
+
+.ns-list{display:flex;flex-direction:column;gap:7px}
+.ns-item{display:flex;gap:9px;align-items:flex-start;padding:9px 12px;background:var(--page);border-radius:8px}
+.ns-num{width:21px;height:21px;border-radius:50%;background:var(--blue);color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ns-txt{font-size:12px;color:var(--ink2);line-height:1.5}
+
+.res-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 18px;border-radius:9px;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn-p{background:var(--blue);color:white;box-shadow:0 2px 8px rgba(37,99,235,.2)}
+.btn-p:hover{background:#1D4ED8}
+.btn-s{background:var(--white);color:var(--ink);border:1.5px solid var(--border)}
+.btn-s:hover{border-color:var(--ink2)}
+.btn-g{background:var(--green-lt);color:var(--green);border:1.5px solid var(--green-bd)}
+.btn-g:hover{background:var(--green);color:white}
+.btn-o{background:var(--orange-lt);color:var(--orange);border:1.5px solid var(--orange-bd)}
+.btn-o:hover{background:var(--orange);color:white}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px)}
+.modal-box{background:var(--white);border-radius:20px;padding:26px;width:470px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.15);border:1px solid var(--border)}
+.modal-h{font-family:var(--serif);font-size:19px;color:var(--ink);margin-bottom:18px}
+.modal-body{display:flex;flex-direction:column;gap:13px}
+.m-fld{display:flex;flex-direction:column;gap:4px}
+.m-lbl{font-size:11px;font-weight:700;color:var(--ink2)}
+.modal-foot{display:flex;justify-content:flex-end;gap:7px;margin-top:18px}
+
+/* Tag input */
+.tag-box{border:1.5px solid var(--border);background:var(--page);border-radius:9px;padding:7px 9px;min-height:44px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;cursor:text;transition:border-color .15s,background .15s}
+.tag-box:focus-within{border-color:var(--blue);background:white}
+.tag-chip{display:flex;align-items:center;gap:4px;background:var(--blue-lt);border:1px solid var(--blue-bd);color:var(--blue);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600}
+.tag-del{cursor:pointer;font-size:13px;opacity:.6}
+.tag-del:hover{opacity:1}
+.tag-inp{border:none;background:transparent;color:var(--ink);font-family:var(--font);font-size:13px;outline:none;flex:1;min-width:90px}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:white;padding:11px 17px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:opacity .3s;pointer-events:none}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--ink3)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside id="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="logo-name">WeekdayPlan AI</span>
+    </div>
+    <div class="logo-tag">Intelligent project planning</div>
+  </div>
+
+  <div class="sb-nav">
+    <div class="nav-label">Setup steps</div>
+
+    <button class="step-btn active" data-step="0" onclick="goStep(0)">
+      <div class="step-circle"><span>0</span></div>
+      <div class="step-info">
+        <div class="step-t">Company setup</div>
+        <div class="step-s">Train the AI on your company — once</div>
+      </div>
+    </button>
+
+    <button class="step-btn" data-step="1" onclick="goStep(1)">
+      <div class="step-circle"><span>1</span></div>
+      <div class="step-info">
+        <div class="step-t">Team registry</div>
+        <div class="step-s">Add your people — once</div>
+      </div>
+    </button>
+
+    <button class="step-btn" data-step="2" onclick="goStep(2)">
+      <div class="step-circle"><span>2</span></div>
+      <div class="step-info">
+        <div class="step-t">Client brief</div>
+        <div class="step-s">Describe each new project</div>
+      </div>
+    </button>
+
+    <button class="step-btn" data-step="3" onclick="goStep(3)">
+      <div class="step-circle"><span>3</span></div>
+      <div class="step-info">
+        <div class="step-t">AI project plan</div>
+        <div class="step-s">Your complete plan appears here</div>
+      </div>
+    </button>
+  </div>
+
+  <div class="sb-label">Saved projects</div>
+  <div class="sb-projects" id="projects-list">
+    <div class="proj-empty">
+      <div class="proj-empty-ico">📁</div>
+      <div class="proj-empty-txt">No saved projects yet. Generate your first plan to get started.</div>
+    </div>
+  </div>
+
+  <button class="new-btn" onclick="newProject()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New project
+  </button>
+</aside>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<div id="main">
+
+  <!-- API Key Banner -->
+  <div id="api-banner">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p>API key needed:</p>
+    <input type="password" id="api-key-input" placeholder="Paste your Anthropic key here — starts with sk-ant-..." />
+    <button class="ban-btn" onclick="saveKey()">Connect AI →</button>
+  </div>
+
+  <!-- Header -->
+  <div class="main-hdr">
+    <div>
+      <div class="hdr-title" id="hdr-title">Step 0 — Company Setup</div>
+      <div class="hdr-sub" id="hdr-sub">Tell the AI about your company. You only do this once.</div>
+    </div>
+    <div class="hdr-btns">
+      <button class="btn btn-s" onclick="prevStep()">← Back</button>
+      <button class="btn btn-p" onclick="nextStep()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Progress breadcrumb -->
+  <div class="prog-bar">
+    <div class="crumb active" id="crumb-0"><div class="crumb-dot"></div> Company setup</div>
+    <div class="crumb-sep">›</div>
+    <div class="crumb" id="crumb-1"><div class="crumb-dot"></div> Team</div>
+    <div class="crumb-sep">›</div>
+    <div class="crumb" id="crumb-2"><div class="crumb-dot"></div> Brief</div>
+    <div class="crumb-sep">›</div>
+    <div class="crumb" id="crumb-3"><div class="crumb-dot"></div> AI plan</div>
+  </div>
+
+  <!-- ═══ SCROLLABLE CONTENT ═══ -->
+  <div class="content">
+
+    <!-- ────────────────────────────────────────────
+         PHASE 0 — COMPANY SETUP
+         This is where you "train" the AI on your company.
+         Fill this once. It shapes every project plan you generate.
+    ──────────────────────────────────────────── -->
+    <div class="phase active" id="phase-0">
+      <div class="ph">
+        <h1>Company setup &amp; AI training</h1>
+        <p>This is where you customise WeekdayPlan AI for <strong>your specific company</strong>. Fill this in once and the AI will always plan projects according to your company's style, tools, values, and working methods. Think of it as briefing your new AI project manager on how your company works.</p>
+      </div>
+
+      <div class="setup-grid">
+
+        <!-- Company identity -->
+        <div class="setup-card full highlight">
+          <div class="fld-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+            Company name &amp; what you do
+          </div>
+          <div class="fld-hint">The AI will use this to understand your business context and tailor all plans accordingly.</div>
+          <input class="fld-input" id="co-name" placeholder="e.g. Nexora Digital — a mid-size software agency that builds web and mobile products for enterprise clients across finance and retail sectors" />
+        </div>
+
+        <!-- Working style -->
+        <div class="setup-card">
+          <div class="fld-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            How your company works
+          </div>
+          <div class="fld-hint">Describe your typical working style, team structure, and how projects usually run at your company.</div>
+          <textarea class="fld-ta" id="co-style" placeholder="e.g. We run 2-week Scrum sprints. Teams are cross-functional with typically 5-8 people. We use Jira for task management, Confluence for docs, and Figma for all design work. Developers follow TDD. We always do a discovery phase before any build starts..."></textarea>
+        </div>
+
+        <!-- Preferred tools -->
+        <div class="setup-card">
+          <div class="fld-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Your standard toolset
+          </div>
+          <div class="fld-hint">List the tools your company always uses — the AI will recommend these instead of generic alternatives.</div>
+          <textarea class="fld-ta" id="co-tools" placeholder="e.g. Project management: Jira&#10;Communication: Slack, Google Meet&#10;Design: Figma&#10;Code: GitHub, VS Code&#10;Docs: Confluence, Google Workspace&#10;Cloud: AWS&#10;CI/CD: Jenkins, GitHub Actions&#10;Monitoring: Datadog"></textarea>
+        </div>
+
+        <!-- Company rules for AI -->
+        <div class="setup-card full">
+          <div class="fld-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Rules the AI must always follow  <span style="font-weight:400;color:var(--ink3)">(most important field)</span>
+          </div>
+          <div class="fld-hint">Write any rules, constraints, or standards that must appear in every project plan. This is the core of your AI customisation — be as specific as you like.</div>
+          <textarea class="fld-ta" id="co-rules" style="min-height:130px;" placeholder="e.g.&#10;— Always include a security review phase before any launch&#10;— Never assign more than 2 projects to one person at the same time&#10;— All projects must have a dedicated QA engineer from day one&#10;— Discovery and scoping must always come before design or development&#10;— Include GDPR compliance checkpoints for any project handling user data&#10;— Always estimate 20% extra time as a buffer on top of the base estimate&#10;— Team leads must review and approve all deliverables before client presentation&#10;— Never recommend Waterfall for technology projects — always prefer Agile approaches"></textarea>
+        </div>
+
+        <!-- Company values -->
+        <div class="setup-card">
+          <div class="fld-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Company values &amp; priorities
+          </div>
+          <div class="fld-hint">What does your company stand for? The AI will reflect these in how it plans and recommends.</div>
+          <textarea class="fld-ta" id="co-values" placeholder="e.g. We prioritise quality over speed. Client communication is critical — we always recommend weekly status calls. We believe in iterative delivery with early client demos. Team wellbeing matters — we don't recommend crunching..."></textarea>
+        </div>
+
+        <!-- Typical clients -->
+        <div class="setup-card">
+          <div class="fld-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            Your typical clients &amp; projects
+          </div>
+          <div class="fld-hint">Who are your usual clients? What kind of projects do you most often work on? This helps the AI give more relevant advice.</div>
+          <textarea class="fld-ta" id="co-clients" placeholder="e.g. Mostly mid-to-large enterprises in banking, insurance, and retail. Projects are usually digital transformation initiatives — legacy system replacements, new customer portals, mobile apps, and data platforms. Budgets typically range from £200K to £2M..."></textarea>
+        </div>
+
+        <!-- Save button -->
+        <div class="setup-card full" style="text-align:center;background:var(--green-lt);border-color:var(--green-bd)">
+          <p style="font-size:14px;color:var(--ink2);margin-bottom:14px;">When you're ready, save your company setup. The AI will use these settings for every project you plan.</p>
+          <button class="btn btn-g" style="font-size:14px;padding:11px 28px;margin:0 auto" onclick="saveCompanySetup()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Save company setup &amp; continue to team →
+          </button>
+          <div id="setup-saved" style="display:none;margin-top:12px">
+            <span class="setup-saved-badge">✓ Company setup saved — AI is trained on your company</span>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end phase-0 -->
+
+    <!-- ────────────────────────────────────────────
+         PHASE 1 — TEAM REGISTRY
+         Add your people once. AI uses this to assign roles.
+    ──────────────────────────────────────────── -->
+    <div class="phase" id="phase-1">
+      <div class="ph">
+        <h1>Team registry</h1>
+        <p>Add everyone in your company who could work on a project — their name, role, and skills. You do this once. For every future project, the AI picks the right people automatically based on what the project needs.</p>
+      </div>
+
+      <div class="team-grid" id="team-grid"></div>
+
+      <div class="info-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div><strong>One-time setup.</strong> The AI uses each person's role and skills to decide who should be on a project team. The more detail you add about their skills, the smarter the assignments will be. You can always add or remove people later.</div>
+      </div>
+    </div><!-- end phase-1 -->
+
+    <!-- ────────────────────────────────────────────
+         PHASE 2 — CLIENT BRIEF
+         You fill this for every new project.
+    ──────────────────────────────────────────── -->
+    <div class="phase" id="phase-2">
+      <div class="ph">
+        <h1>Describe the project</h1>
+        <p>This is the only thing you need to fill in for each new project. Describe what the client wants as clearly as possible — the more detail you give, the better the AI plan will be. Don't worry about team, methodology, or timelines — the AI handles all of that.</p>
+      </div>
+
+      <div class="brief-grid">
+
+        <div class="field-card full">
+          <div class="field-title">Project name</div>
+          <input class="fld-input" id="proj-name" placeholder="e.g. HDFC Bank Customer Mobile App" />
+        </div>
+
+        <div class="field-card full">
+          <div class="field-title">What does the client want? <span style="color:var(--red)">*</span></div>
+          <div class="field-hint">Describe the project in plain English. Include: what product/feature is needed, who will use it, what problem it solves, any specific requirements or integrations, deadlines, and what success looks like.</div>
+          <textarea class="fld-ta" id="proj-req" style="min-height:130px;" placeholder="Example: The client is a regional bank and wants a mobile app for their retail customers. The app should let customers check balances, transfer money, pay bills, and apply for loans. It must work on iOS and Android. Needs to integrate with their core banking system (Finacle). Must meet RBI security guidelines. Target launch in 9 months. Expected 200,000 users in the first year..."></textarea>
+        </div>
+
+        <div class="field-card">
+          <div class="field-title">Industry / domain</div>
+          <select class="fld-select" id="proj-ind">
+            <option>Technology / Software</option>
+            <option>Healthcare / MedTech</option>
+            <option>Finance / FinTech / Banking</option>
+            <option>Retail / E-Commerce</option>
+            <option>Education / EdTech</option>
+            <option>Manufacturing</option>
+            <option>Real Estate</option>
+            <option>Media / Entertainment</option>
+            <option>Government / Public Sector</option>
+            <option>Logistics / Supply Chain</option>
+            <option>Telecom</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field-card">
+          <div class="field-title">How big is this project?</div>
+          <div class="pills" id="scale-pills">
+            <div class="pill on" onclick="pickPill(this,'scale-pills')">Small (1–3 months)</div>
+            <div class="pill" onclick="pickPill(this,'scale-pills')">Medium (3–6 months)</div>
+            <div class="pill" onclick="pickPill(this,'scale-pills')">Large (6–12 months)</div>
+            <div class="pill" onclick="pickPill(this,'scale-pills')">Enterprise (12+ months)</div>
+          </div>
+        </div>
+
+        <div class="field-card">
+          <div class="field-title">Approximate budget</div>
+          <div class="pills" id="budget-pills">
+            <div class="pill on" onclick="pickPill(this,'budget-pills')">Under $50K</div>
+            <div class="pill" onclick="pickPill(this,'budget-pills')">$50K–$150K</div>
+            <div class="pill" onclick="pickPill(this,'budget-pills')">$150K–$500K</div>
+            <div class="pill" onclick="pickPill(this,'budget-pills')">$500K–$1M</div>
+            <div class="pill" onclick="pickPill(this,'budget-pills')">Over $1M</div>
+          </div>
+        </div>
+
+        <div class="field-card">
+          <div class="field-title">What matters most to the client?</div>
+          <div class="pills" id="priority-pills">
+            <div class="pill on" onclick="pickPill(this,'priority-pills')">Launch fast</div>
+            <div class="pill" onclick="pickPill(this,'priority-pills')">Highest quality</div>
+            <div class="pill" onclick="pickPill(this,'priority-pills')">Keep costs low</div>
+            <div class="pill" onclick="pickPill(this,'priority-pills')">Innovation</div>
+          </div>
+        </div>
+
+        <div class="field-card full">
+          <div class="field-title">Special constraints <span style="font-weight:400;color:var(--ink3);font-size:12px">(optional)</span></div>
+          <div class="field-hint">Fixed deadlines, must-use technologies, compliance needs, legacy system integrations, regulatory requirements, etc.</div>
+          <textarea class="fld-ta" id="proj-constraints" style="min-height:65px;" placeholder="e.g. Must go live before 31 December. RBI compliance required. Must integrate with existing Finacle banking system. Remote team across India and UK..."></textarea>
+        </div>
+
+      </div>
+    </div><!-- end phase-2 -->
+
+    <!-- ────────────────────────────────────────────
+         PHASE 3 — AI PLAN OUTPUT
+         Generated automatically by Claude AI.
+    ──────────────────────────────────────────── -->
+    <div class="phase" id="phase-3">
+
+      <!-- Before generation -->
+      <div id="gen-hero">
+        <div class="gen-hero">
+          <div class="gen-hero-ico">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <h2>Ready to generate your project plan</h2>
+          <p>WeekdayPlan AI will analyse your company setup, your team, and the client brief — then create a complete, ready-to-present project plan tailored specifically to your company's way of working.</p>
+          <div class="feat-chips">
+            <div class="fc" style="background:var(--blue-lt);color:var(--blue);border-color:var(--blue-bd)">✓ Smart team assignment</div>
+            <div class="fc" style="background:var(--purple-lt);color:var(--purple);border-color:var(--purple-bd)">✓ Methodology recommendation</div>
+            <div class="fc" style="background:var(--amber-lt);color:var(--amber);border-color:var(--amber-bd)">✓ Phase-by-phase timeline</div>
+            <div class="fc" style="background:var(--red-lt);color:var(--red);border-color:var(--red-bd)">✓ Risk register</div>
+            <div class="fc" style="background:var(--green-lt);color:var(--green);border-color:var(--green-bd)">✓ KPIs &amp; success metrics</div>
+            <div class="fc" style="background:var(--teal-lt);color:var(--teal);border-color:var(--teal-bd)">✓ Recommended tools</div>
+            <div class="fc" style="background:var(--orange-lt);color:var(--orange);border-color:var(--orange-bd)">✓ Based on your company rules</div>
+          </div>
+          <button class="gen-btn" id="gen-btn" onclick="generatePlan()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate my project plan
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="gen-loading" style="display:none">
+        <div class="loading-card">
+          <div class="ld-dots">
+            <div class="ld-dot"></div>
+            <div class="ld-dot"></div>
+            <div class="ld-dot"></div>
+          </div>
+          <div class="ld-msg" id="ld-msg">Reading your company setup...</div>
+          <div class="ld-sub">This usually takes 10–20 seconds</div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="gen-results" style="display:none">
+        <div class="ph" style="margin-bottom:16px">
+          <h1 id="res-name">Project Plan</h1>
+          <p id="res-summary" style="color:var(--ink2)"></p>
+        </div>
+        <div class="stat-row" id="stat-row"></div>
+        <div id="res-content"></div>
+        <div class="res-actions">
+          <button class="btn btn-g" onclick="saveProject()">💾 Save project</button>
+          <button class="btn btn-s" onclick="generatePlan()">↺ Regenerate</button>
+          <button class="btn btn-s" onclick="exportJSON()">⬇ Export JSON</button>
+        </div>
+      </div>
+
+    </div><!-- end phase-3 -->
+
+  </div><!-- end content -->
+</div><!-- end main -->
+</div><!-- end app -->
+
+<!-- ════ ADD MEMBER MODAL ════ -->
+<div class="modal-bg" id="mem-modal" style="display:none" onclick="bgClick(event)">
+  <div class="modal-box">
+    <div class="modal-h">Add a team member</div>
+    <div class="modal-body">
+      <div class="m-fld">
+        <label class="m-lbl">Full name</label>
+        <input class="fld-input" id="m-name" placeholder="e.g. Riya Sharma" />
+      </div>
+      <div class="m-fld">
+        <label class="m-lbl">Job role / title</label>
+        <input class="fld-input" id="m-role" placeholder="e.g. Senior Backend Developer" />
+      </div>
+      <div class="m-fld">
+        <label class="m-lbl">Skills <span style="font-weight:400;color:var(--ink3)">(type each skill, press Enter)</span></label>
+        <div class="tag-box" id="tag-box" onclick="document.getElementById('tag-inp').focus()">
+          <input class="tag-inp" id="tag-inp" placeholder="React, Node.js, AWS..." onkeydown="tagKey(event)" />
+        </div>
+      </div>
+      <div class="m-fld">
+        <label class="m-lbl">Experience level</label>
+        <div class="pills" id="exp-pills">
+          <div class="pill" onclick="pickPill(this,'exp-pills')">Junior</div>
+          <div class="pill on" onclick="pickPill(this,'exp-pills')">Mid-level</div>
+          <div class="pill" onclick="pickPill(this,'exp-pills')">Senior</div>
+          <div class="pill" onclick="pickPill(this,'exp-pills')">Lead / Principal</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-s" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveMember()">Add to team →</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" style="opacity:0"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIG — paste your API key here OR use
+   the yellow banner when you open the app
+   ══════════════════════════════════════════ */
+let API_KEY = localStorage.getItem('WeekdayPlan_key') || '';
+
+/* ══ STATE ══ */
+const AV_COLORS = [
+  {bg:'#EEF3FE',tx:'#2563EB'},{bg:'#F0FDFA',tx:'#0D9488'},
+  {bg:'#F5F3FF',tx:'#7C3AED'},{bg:'#EDFAF3',tx:'#16A34A'},
+  {bg:'#FEF9EC',tx:'#B45309'},{bg:'#FEF2F2',tx:'#DC2626'},
+  {bg:'#FFF7ED',tx:'#C2410C'},{bg:'#F0F9FF',tx:'#0369A1'}
+];
+const EXP_ST = {
+  'Junior':       {bg:'#F0FDFA',tx:'#0D9488',bd:'#99F6E4'},
+  'Mid-level':    {bg:'#EEF3FE',tx:'#2563EB',bd:'#BFCFFA'},
+  'Senior':       {bg:'#F5F3FF',tx:'#7C3AED',bd:'#DDD6FE'},
+  'Lead / Principal':{bg:'#EDFAF3',tx:'#16A34A',bd:'#A7E3C0'}
+};
+
+let S = {
+  step: 0,
+  company: JSON.parse(localStorage.getItem('WeekdayPlan_company') || 'null') || {},
+  team: [],
+  projects: JSON.parse(localStorage.getItem('WeekdayPlan_projects') || '[]'),
+  current: null,
+  tags: []
+};
+
+/* Sample team so the app looks populated on first open */
+S.team = [
+  {name:'Arjun Mehta',   role:'Full Stack Developer', skills:['React','Node.js','PostgreSQL','REST APIs'],    exp:'Senior',         ci:0},
+  {name:'Priya Singh',   role:'UX / UI Designer',     skills:['Figma','User Research','Prototyping'],         exp:'Mid-level',      ci:1},
+  {name:'Rahul Verma',   role:'DevOps Engineer',       skills:['AWS','Docker','Kubernetes','CI/CD'],           exp:'Senior',         ci:2},
+  {name:'Sneha Iyer',    role:'Product Manager',       skills:['Agile','Roadmapping','Stakeholders','Jira'],   exp:'Lead / Principal',ci:3},
+  {name:'Karan Patel',   role:'QA Engineer',           skills:['Selenium','API Testing','Test Plans'],         exp:'Mid-level',      ci:4},
+  {name:'Divya Nair',    role:'Business Analyst',      skills:['Requirements','User Stories','Wireframes'],    exp:'Mid-level',      ci:5},
+  {name:'Amit Sharma',   role:'Data Engineer',         skills:['Python','SQL','Spark','Tableau'],              exp:'Senior',         ci:6},
+  {name:'Meera Reddy',   role:'Scrum Master',          skills:['Agile Coaching','Sprint Planning','JIRA'],     exp:'Senior',         ci:7}
+];
+
+/* ══ API KEY ══ */
+function saveKey() {
+  const v = document.getElementById('api-key-input').value.trim();
+  if (!v.startsWith('sk-')) { alert('That doesn\'t look like a valid Anthropic API key (should start with "sk-ant-...").'); return; }
+  API_KEY = v;
+  localStorage.setItem('WeekdayPlan_key', v);
+  document.getElementById('api-banner').style.display = 'none';
+  toast('API key saved — AI planning is now active ✅');
+}
+if (API_KEY) document.getElementById('api-banner').style.display = 'none';
+
+/* ══ NAVIGATION ══ */
+const HDR = [
+  ['Step 0 — Company Setup', 'Train the AI on your company. Do this once.'],
+  ['Step 1 — Team Registry', 'Add your team members. Do this once.'],
+  ['Step 2 — Client Brief',  'Describe what the client needs for this project.'],
+  ['Step 3 — AI Project Plan','Your complete, AI-generated project plan.']
+];
+
+function goStep(n) {
+  S.step = n;
+  document.querySelectorAll('.phase').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.step-btn').forEach((b,i) => {
+    b.classList.toggle('active', i===n);
+    b.classList.toggle('done', i<n);
+    const c = b.querySelector('.step-circle');
+    c.innerHTML = i<n ? '✓' : '<span>' + i + '</span>';
+  });
+  document.querySelectorAll('.crumb').forEach((c,i) => {
+    c.classList.toggle('active', i===n);
+    c.classList.toggle('done', i<n);
+  });
+  document.getElementById('hdr-title').textContent = HDR[n][0];
+  document.getElementById('hdr-sub').textContent   = HDR[n][1];
+}
+
+function nextStep() { if (S.step < 3) goStep(S.step + 1); }
+function prevStep() { if (S.step > 0) goStep(S.step - 1); }
+
+/* ══ COMPANY SETUP ══ */
+function saveCompanySetup() {
+  S.company = {
+    name:    document.getElementById('co-name').value.trim(),
+    style:   document.getElementById('co-style').value.trim(),
+    tools:   document.getElementById('co-tools').value.trim(),
+    rules:   document.getElementById('co-rules').value.trim(),
+    values:  document.getElementById('co-values').value.trim(),
+    clients: document.getElementById('co-clients').value.trim()
+  };
+  localStorage.setItem('WeekdayPlan_company', JSON.stringify(S.company));
+  document.getElementById('setup-saved').style.display = 'block';
+  toast('Company setup saved — AI is now customised for your company ✅');
+  setTimeout(() => goStep(1), 1200);
+}
+
+/* Restore saved company setup */
+function restoreCompany() {
+  const c = S.company;
+  if (!c) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('co-name', c.name);
+  set('co-style', c.style);
+  set('co-tools', c.tools);
+  set('co-rules', c.rules);
+  set('co-values', c.values);
+  set('co-clients', c.clients);
+  if (c.name || c.rules) document.getElementById('setup-saved').style.display = 'block';
+}
+
+/* ══ PILLS ══ */
+function pickPill(el, groupId) {
+  document.getElementById(groupId).querySelectorAll('.pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+function getPill(groupId) {
+  const sel = document.getElementById(groupId)?.querySelector('.pill.on');
+  return sel ? sel.textContent.trim() : '';
+}
+
+/* ══ TEAM RENDERING ══ */
+function renderTeam() {
+  const g = document.getElementById('team-grid');
+  g.innerHTML = '';
+  S.team.forEach((m,i) => {
+    const ini = m.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    const col = AV_COLORS[m.ci % AV_COLORS.length];
+    const es  = EXP_ST[m.exp] || EXP_ST['Mid-level'];
+    const d   = document.createElement('div');
+    d.className = 'member-card';
+    d.innerHTML = `
+      <div class="mem-hdr">
+        <div class="av" style="background:${col.bg};color:${col.tx}">${ini}</div>
+        <div><div class="mem-name">${x(m.name)}</div><div class="mem-role">${x(m.role)}</div></div>
+      </div>
+      <div class="skill-chips">${m.skills.map(s=>`<span class="sk">${x(s)}</span>`).join('')}</div>
+      <span class="exp-badge" style="background:${es.bg};color:${es.tx};border:1px solid ${es.bd}">● ${m.exp}</span>
+      <button class="rm-btn" onclick="removeMember(${i})">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/></svg>
+        Remove
+      </button>`;
+    g.appendChild(d);
+  });
+  const add = document.createElement('div');
+  add.className = 'add-tile';
+  add.onclick = openModal;
+  add.innerHTML = `<div class="add-tile-ico">+</div><div class="add-tile-t">Add team member</div><div class="add-tile-s">Name, role, skills & experience</div>`;
+  g.appendChild(add);
+}
+
+function removeMember(i) {
+  if (!confirm('Remove ' + S.team[i].name + ' from the team?')) return;
+  S.team.splice(i,1);
+  renderTeam();
+}
+
+/* ══ MODAL ══ */
+function openModal() {
+  S.tags = [];
+  ['m-name','m-role','tag-inp'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('exp-pills').querySelectorAll('.pill').forEach((p,i) => p.classList.toggle('on', i===1));
+  renderTags();
+  document.getElementById('mem-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('m-name').focus(), 80);
+}
+function closeModal() { document.getElementById('mem-modal').style.display = 'none'; }
+function bgClick(e) { if (e.target.id === 'mem-modal') closeModal(); }
+
+function renderTags() {
+  const box = document.getElementById('tag-box');
+  const inp = document.getElementById('tag-inp');
+  box.innerHTML = '';
+  S.tags.forEach((t,i) => {
+    const c = document.createElement('span');
+    c.className = 'tag-chip';
+    c.innerHTML = x(t) + ' <span class="tag-del" onclick="delTag(' + i + ')">×</span>';
+    box.appendChild(c);
+  });
+  box.appendChild(inp);
+}
+function delTag(i) { S.tags.splice(i,1); renderTags(); }
+function tagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const v = e.target.value.replace(/,$/,'').trim();
+    if (v) { S.tags.push(v); e.target.value = ''; renderTags(); }
+  }
+}
+
+function saveMember() {
+  const name = document.getElementById('m-name').value.trim();
+  const role = document.getElementById('m-role').value.trim();
+  const inline = document.getElementById('tag-inp').value.trim();
+  if (inline) S.tags.push(inline);
+  const exp = getPill('exp-pills') || 'Mid-level';
+  if (!name) { alert('Please enter a name.'); return; }
+  if (!role) { alert('Please enter a role.'); return; }
+  S.team.push({name, role, skills:[...S.tags], exp, ci: S.team.length});
+  closeModal();
+  renderTeam();
+  toast(name + ' added to the team ✅');
+}
+
+/* ══ GENERATE PLAN ══ */
+const LD_MSGS = [
+  'Reading your company setup...',
+  'Understanding the client requirements...',
+  'Matching team skills to the project...',
+  'Choosing the right methodology...',
+  'Building the project timeline...',
+  'Writing the risk register...',
+  'Finalising your project plan...'
+];
+
+async function generatePlan() {
+  if (!API_KEY) {
+    document.getElementById('api-banner').style.display = 'flex';
+    document.getElementById('api-key-input').focus();
+    alert('Please paste your Anthropic API key in the yellow bar at the top first.');
+    return;
+  }
+  const name = document.getElementById('proj-name').value.trim() || 'Untitled Project';
+  const req  = document.getElementById('proj-req').value.trim();
+  if (!req) { goStep(2); alert('Please describe what the client wants before generating the plan.'); return; }
+
+  goStep(3);
+  document.getElementById('gen-hero').style.display = 'none';
+  document.getElementById('gen-loading').style.display = 'block';
+  document.getElementById('gen-results').style.display = 'none';
+
+  let mi = 0;
+  const mel = document.getElementById('ld-msg');
+  const mtimer = setInterval(() => { mi=(mi+1)%LD_MSGS.length; mel.textContent=LD_MSGS[mi]; }, 2000);
+
+  /* Build context from company setup */
+  const co = S.company;
+  const coCtx = [
+    co.name   ? 'COMPANY: ' + co.name : '',
+    co.style  ? 'HOW WE WORK: ' + co.style : '',
+    co.tools  ? 'OUR STANDARD TOOLS: ' + co.tools : '',
+    co.rules  ? 'RULES TO ALWAYS FOLLOW: ' + co.rules : '',
+    co.values ? 'OUR VALUES: ' + co.values : '',
+    co.clients? 'OUR TYPICAL CLIENTS & PROJECTS: ' + co.clients : ''
+  ].filter(Boolean).join('\n\n');
+
+  const teamCtx = S.team.length
+    ? S.team.map(m => '• ' + m.name + ' (' + m.role + ', ' + m.exp + '): ' + m.skills.join(', ')).join('\n')
+    : '• No team registered — please recommend an ideal team structure for this type of project.';
+
+  const scale    = getPill('scale-pills')    || 'Medium (3–6 months)';
+  const budget   = getPill('budget-pills')   || 'Under $50K';
+  const priority = getPill('priority-pills') || 'Launch fast';
+  const industry = document.getElementById('proj-ind').value;
+  const constr   = document.getElementById('proj-constraints').value.trim();
+
+  const prompt =
+`You are a world-class AI Project Manager. Use ALL the company context below to produce a plan that perfectly fits this specific company's way of working.
+
+━━━ COMPANY CONTEXT (read carefully — this shapes everything) ━━━
+${coCtx || 'No company setup provided — use general best practices.'}
+
+━━━ AVAILABLE TEAM ━━━
+${teamCtx}
+
+━━━ PROJECT DETAILS ━━━
+Name: ${name}
+Industry: ${industry}
+Scale: ${scale}
+Budget: ${budget}
+Client priority: ${priority}
+${constr ? 'Constraints: ' + constr : ''}
+
+━━━ WHAT THE CLIENT WANTS ━━━
+${req}
+
+━━━ INSTRUCTIONS ━━━
+Return ONLY a valid JSON object. No markdown fences, no explanation, no text before or after the JSON.
+The plan MUST follow the company's rules, use their preferred tools where possible, and reflect their working style.
+Use realistic timelines. Be specific and actionable.
+
+{
+  "summary": "2-sentence plain-English executive summary of what this project is and its main goal",
+  "estimatedDuration": "X months",
+  "estimatedTeamSize": <integer>,
+  "complexityScore": "Low" | "Medium" | "High" | "Very High",
+  "recommendedTeam": [
+    {
+      "name": "<exact name from team list>",
+      "role": "<their role>",
+      "responsibility": "<their specific job on this project, 1 sentence>",
+      "allocation": "25%" | "50%" | "75%" | "100%"
+    }
+  ],
+  "methodology": {
+    "primary": "Scrum" | "Kanban" | "SAFe" | "Waterfall" | "Hybrid Agile" | "PRINCE2" | "XP" | "Lean",
+    "reason": "<why this methodology suits this project AND this company, 2 sentences>",
+    "principles": ["<3 to 5 guiding principles>"],
+    "sprintLength": "1 week" | "2 weeks" | "3 weeks" | "4 weeks" | "N/A"
+  },
+  "phases": [
+    {
+      "name": "<phase name>",
+      "duration": "<e.g. 2 weeks>",
+      "weeks": <integer>,
+      "activities": ["<activity>", "<activity>", "<activity>"]
+    }
+  ],
+  "risks": [
+    {
+      "title": "<short risk title>",
+      "level": "High" | "Medium" | "Low",
+      "description": "<what could go wrong, 1 sentence>",
+      "mitigation": "<specific action to prevent or reduce it>"
+    }
+  ],
+  "kpis": [
+    {
+      "metric": "<metric name>",
+      "target": "<measurable target>",
+      "how": "<how to track it>"
+    }
+  ],
+  "toolsRecommended": ["<5 to 7 tools — prefer company's standard tools>"],
+  "nextSteps": ["<4 immediate next actions>"]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3500,
+        stream: true,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.error?.message || 'HTTP ' + res.status + ' — check your API key.');
+    }
+
+    let full = '';
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    while (true) {
+      const {done,value} = await reader.read();
+      if (done) break;
+      dec.decode(value).split('\n').filter(l=>l.startsWith('data: ')).forEach(line => {
+        try {
+          const d = JSON.parse(line.slice(6));
+          if (d.type==='content_block_delta' && d.delta?.text) full += d.delta.text;
+        } catch {}
+      });
+    }
+
+    clearInterval(mtimer);
+    const clean = full.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const plan = JSON.parse(clean);
+
+    S.current = {
+      name, plan,
+      brief: {req, industry, scale, budget, priority, constr},
+      team: JSON.parse(JSON.stringify(S.team)),
+      company: JSON.parse(JSON.stringify(S.company)),
+      generatedAt: new Date().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})
+    };
+
+    document.getElementById('gen-loading').style.display = 'none';
+    document.getElementById('gen-results').style.display = 'block';
+    drawResults(plan, name);
+
+  } catch(err) {
+    clearInterval(mtimer);
+    document.getElementById('gen-loading').style.display = 'none';
+    document.getElementById('gen-hero').style.display = 'block';
+    alert('Error generating plan:\n\n' + err.message + '\n\nPlease check your API key is valid and has credits available.');
+  }
+}
+
+/* ══ DRAW RESULTS ══ */
+function drawResults(p, nm) {
+  document.getElementById('res-name').textContent    = nm;
+  document.getElementById('res-summary').textContent = p.summary;
+
+  /* complexity icon — fixed using proper ternary, not string */
+  const cxIco = (p.complexityScore==='High'||p.complexityScore==='Very High') ? '🔴'
+              : p.complexityScore==='Medium' ? '🟡' : '🟢';
+
+  document.getElementById('stat-row').innerHTML =
+    statCard('🗓️', p.estimatedDuration, 'Estimated duration') +
+    statCard('👥', p.estimatedTeamSize + ' people', 'Recommended team size') +
+    statCard(cxIco, p.complexityScore, 'Project complexity');
+
+  const maxW = Math.max(...p.phases.map(ph=>ph.weeks||1), 1);
+
+  document.getElementById('res-content').innerHTML =
+
+    /* METHODOLOGY */
+    section('purple','M','Recommended methodology','How the project should be structured and run',
+    `<div class="method-box">
+       <div class="method-nm">${x(p.methodology.primary)}${p.methodology.sprintLength!=='N/A' ? ' &nbsp;·&nbsp; ' + x(p.methodology.sprintLength) + ' sprints' : ''}</div>
+       <div class="method-why">${x(p.methodology.reason)}</div>
+     </div>
+     <div class="princ-row">${p.methodology.principles.map(pr=>`<span class="princ">${x(pr)}</span>`).join('')}</div>`) +
+
+    /* TEAM */
+    section('blue','T','Recommended team','Selected from your registry based on skills needed for this project',
+    `<div class="team-res-grid">
+      ${p.recommendedTeam.map(m=>{
+        const found = (S.current?.team||[]).find(t=>t.name===m.name);
+        const col   = AV_COLORS[(found?found.ci:0) % AV_COLORS.length];
+        const ini   = m.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `<div class="team-res-card">
+          <div class="av" style="width:36px;height:36px;font-size:12px;flex-shrink:0;background:${col.bg};color:${col.tx}">${ini}</div>
+          <div class="trc-info">
+            <div class="trc-name">${x(m.name)}</div>
+            <div class="trc-role">${x(m.role)}</div>
+            <span class="alloc">${x(m.allocation)}</span>
+            <div class="trc-resp">${x(m.responsibility)}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`) +
+
+    /* TIMELINE */
+    section('amber','L','Project timeline','Phase-by-phase plan from kickoff to delivery',
+    `<div class="tl-list">
+      ${p.phases.map(ph=>`
+        <div class="tl-item">
+          <div>
+            <div class="tl-name">${x(ph.name)}</div>
+            <div class="tl-acts">${(ph.activities||[]).join(' · ')}</div>
+          </div>
+          <div class="tl-track"><div class="tl-bar" style="width:${Math.round((ph.weeks||1)/maxW*100)}%"></div></div>
+          <div class="tl-dur">${x(ph.duration)}</div>
+        </div>`).join('')}
+    </div>`) +
+
+    /* RISKS */
+    section('red','R','Risk register','What could go wrong and how to prevent it',
+    `<div class="risk-list">
+      ${p.risks.map(r=>`
+        <div class="risk-row ${r.level}">
+          <span class="risk-badge">${r.level.toUpperCase()}</span>
+          <div>
+            <div class="risk-nm">${x(r.title)}</div>
+            <div class="risk-desc">${x(r.description)}</div>
+            <div class="risk-mit">↳ ${x(r.mitigation)}</div>
+          </div>
+        </div>`).join('')}
+    </div>`) +
+
+    /* KPIs + Tools + Next Steps */
+    `<div class="two-col">
+      ${section('green','K','Success KPIs','How you will measure if the project is a success',
+        `<div class="kpi-list">${p.kpis.map(k=>`
+          <div class="kpi-item">
+            <div class="kpi-m">${x(k.metric)}</div>
+            <div class="kpi-t">Target: ${x(k.target)}</div>
+            <div class="kpi-h">${x(k.how)}</div>
+          </div>`).join('')}</div>`)}
+      <div>
+        ${section('teal','T','Recommended tools','Best-fit tools for this project — based on your company setup',
+          `<div class="tool-wrap">${p.toolsRecommended.map(t=>`<span class="tool-chip">${x(t)}</span>`).join('')}</div>`)}
+        ${section('blue','N','Your next steps','The first things to do to get this project moving',
+          `<div class="ns-list">${p.nextSteps.map((s,i)=>`
+            <div class="ns-item">
+              <div class="ns-num">${i+1}</div>
+              <div class="ns-txt">${x(s)}</div>
+            </div>`).join('')}</div>`)}
+      </div>
+    </div>`;
+}
+
+/* Helper to build a result section card */
+function section(color, _ico, title, sub, body) {
+  const colors = {
+    purple:{bg:'var(--purple-lt)',stroke:'#7C3AED'},
+    blue:  {bg:'var(--blue-lt)',  stroke:'#2563EB'},
+    amber: {bg:'var(--amber-lt)', stroke:'#B45309'},
+    red:   {bg:'var(--red-lt)',   stroke:'#DC2626'},
+    green: {bg:'var(--green-lt)', stroke:'#16A34A'},
+    teal:  {bg:'var(--teal-lt)',  stroke:'#0D9488'},
+    orange:{bg:'var(--orange-lt)',stroke:'#C2410C'}
+  };
+  const c = colors[color] || colors.blue;
+  return `<div class="res-card">
+    <div class="res-hdr">
+      <div class="res-ico" style="background:${c.bg}">
+        <svg viewBox="0 0 24 24" style="color:${c.stroke}"><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div><div class="res-title">${title}</div><div class="res-sub">${sub}</div></div>
+    </div>
+    ${body}
+  </div>`;
+}
+
+function statCard(ico, val, lbl) {
+  return `<div class="stat-card"><div class="stat-ico">${ico}</div><div class="stat-val">${x(String(val))}</div><div class="stat-lbl">${lbl}</div></div>`;
+}
+
+/* ══ SAVE / LOAD ══ */
+function saveProject() {
+  if (!S.current) return;
+  const idx = S.projects.findIndex(p=>p.name===S.current.name);
+  if (idx>=0) S.projects[idx] = {...S.current, id: S.projects[idx].id};
+  else S.projects.unshift({...S.current, id: Date.now()});
+  localStorage.setItem('WeekdayPlan_projects', JSON.stringify(S.projects));
+  renderProjects();
+  toast('Project saved ✅');
+}
+
+function renderProjects() {
+  const el = document.getElementById('projects-list');
+  if (!S.projects.length) {
+    el.innerHTML = '<div class="proj-empty"><div class="proj-empty-ico">📁</div><div class="proj-empty-txt">No saved projects yet.</div></div>';
+    return;
+  }
+  el.innerHTML = S.projects.map((p,i)=>`
+    <div class="proj-card" onclick="loadProject(${i})">
+      <div class="proj-card-name">${x(p.name)}</div>
+      <div class="proj-card-meta">
+        <span>${x(p.plan.methodology.primary)}</span>
+        <span class="mdot"></span>
+        <span>${x(p.plan.estimatedDuration)}</span>
+        ${p.generatedAt ? '<span class="mdot"></span><span>' + p.generatedAt + '</span>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+function loadProject(i) {
+  const p = S.projects[i];
+  S.current = p;
+  document.getElementById('proj-name').value = p.name;
+  document.getElementById('proj-req').value   = p.brief.req;
+  document.getElementById('proj-constraints').value = p.brief.constr || '';
+  goStep(3);
+  document.getElementById('gen-hero').style.display    = 'none';
+  document.getElementById('gen-loading').style.display = 'none';
+  document.getElementById('gen-results').style.display = 'block';
+  drawResults(p.plan, p.name);
+}
+
+function exportJSON() {
+  if (!S.current) return;
+  const blob = new Blob([JSON.stringify(S.current, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (S.current.name||'project').replace(/\s+/g,'_').replace(/[^a-z0-9_-]/gi,'') + '_plan.json';
+  a.click();
+}
+
+function newProject() {
+  ['proj-name','proj-req','proj-constraints'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('gen-hero').style.display    = 'block';
+  document.getElementById('gen-loading').style.display = 'none';
+  document.getElementById('gen-results').style.display = 'none';
+  S.current = null;
+  goStep(2);
+}
+
+/* ══ UTILS ══ */
+function x(s) {
+  if (s==null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastT;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>{ el.style.opacity='0'; }, 3200);
+}
+
+/* ══ INIT ══ */
+restoreCompany();
+renderTeam();
+renderProjects();
+</script>
+</body>
+</html>
+ENDOFFILE
+echo "Done. Size: $(wc -c < /mnt/user-data/outputs/WeekdayPlan-ai.html) bytes"
